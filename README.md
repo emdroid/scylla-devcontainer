@@ -40,6 +40,10 @@ Example:
    - `<sidecar-root>/.devcontainer` symlink to `scylla-devcontainer/.devcontainer`
    - `<sidecar-root>/scylla.code-workspace` (from `scylla.code-workspace.example` if missing)
 
+   Run this once on the host first. After initial setup, re-running from inside the
+   container is supported for refreshing `TOOLCHAIN_IMAGE`; the script updates only
+   that key in `.devcontainer/.env` and preserves all other existing values.
+
 4. Open `<sidecar-root>/scylla.code-workspace` in VS Code.
 5. Reopen in container.
 
@@ -83,4 +87,5 @@ Because `<sidecar-root>/scylla.code-workspace` is outside this repo, these modul
 - `.devcontainer/.env` is generated locally and is git-ignored.
 - `<sidecar-root>/.devcontainer` should be a symlink to `scylla-devcontainer/.devcontainer`.
 - `HOST_WORKSPACE_ROOT` is generated into `.devcontainer/.env` and used for parent-directory bind mount.
+- When run inside a container, the script only updates `TOOLCHAIN_IMAGE` in `.devcontainer/.env` and leaves all other keys unchanged.
 - The setup uses host networking and mounts `/var/run/docker.sock` for docker-in-docker workflows.

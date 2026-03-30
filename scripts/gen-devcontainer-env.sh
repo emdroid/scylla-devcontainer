@@ -11,6 +11,50 @@ workspace_template="${repo_root}/scylla.code-workspace.example"
 workspace_file="${sidecar_root}/scylla.code-workspace"
 repo_dir_name="$(basename "${repo_root}")"
 relative_repo_devcontainer_dir="${repo_dir_name}/.devcontainer"
+running_in_container=false
+
+if [[ -f /.dockerenv || -f /run/.containerenv ]]; then
+    running_in_container=true
+fi
+
+default_toolchain_image="docker.io/scylladb/scylla-toolchain:fedora-43-20260304"
+toolchain_file="${sidecar_root}/scylladb/tools/toolchain/image"
+if [[ -f "${toolchain_file}" ]]; then
+    toolchain_image="$(<"${toolchain_file}")"
+else
+    toolchain_image="${default_toolchain_image}"
+fi
+
+if [[ "${running_in_container}" == true ]]; then
+    if [[ ! -f "${env_file}" ]]; then
+        echo "Error: ${env_file} not found while running inside a container." >&2
+        echo "Run this script once on the host to initialize it, then retry in the container." >&2
+        exit 1
+    fi
+
+    tmp_env_file="$(mktemp "${env_file}.tmp.XXXXXX")"
+    awk -v image="${toolchain_image}" '
+        BEGIN {
+            updated = 0
+        }
+        /^TOOLCHAIN_IMAGE=/ {
+            print "TOOLCHAIN_IMAGE=" image
+            updated = 1
+            next
+        }
+        {
+            print
+        }
+        END {
+            if (!updated) {
+                print "TOOLCHAIN_IMAGE=" image
+            }
+        }
+    ' "${env_file}" > "${tmp_env_file}"
+    mv "${tmp_env_file}" "${env_file}"
+    echo "Updated TOOLCHAIN_IMAGE in ${env_file}"
+    exit 0
+fi
 
 if [[ -L "${root_devcontainer_dir}" ]]; then
     current_target="$(readlink -m "${root_devcontainer_dir}")"
@@ -44,14 +88,6 @@ elif [[ -S /var/run/docker.sock ]]; then
     docker_gid="$(stat -c %g /var/run/docker.sock)"
 fi
 docker_gid="${docker_gid:-996}"
-
-default_toolchain_image="docker.io/scylladb/scylla-toolchain:fedora-43-20260304"
-toolchain_file="${sidecar_root}/scylladb/tools/toolchain/image"
-if [[ -f "${toolchain_file}" ]]; then
-    toolchain_image="$(<"${toolchain_file}")"
-else
-    toolchain_image="${default_toolchain_image}"
-fi
 
 cat > "${env_file}" <<EOF
 DEV_USERNAME=${dev_username}
