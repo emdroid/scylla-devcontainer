@@ -1,0 +1,40 @@
+version: '3'
+
+volumes:
+  profile-vol:
+  cache-vol:
+  opencode-data-vol:
+  opencode-state-vol:
+
+services:
+  scylla-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        TOOLCHAIN_IMAGE: ${TOOLCHAIN_IMAGE:-docker.io/scylladb/scylla-toolchain:fedora-43-20260304}
+        USER_NAME: ${DEV_USERNAME:-devuser}
+        USER_UID: ${DEV_UID:-1001}
+        USER_GID: ${DEV_GID:-1001}
+    network_mode: host
+    privileged: true
+    volumes:
+      - ${HOST_WORKSPACE_ROOT:-../..}:/workspace
+      - profile-vol:/profile
+      - ${HOME}/.tmux.conf:/profile/.tmux.conf:ro
+      - ${HOME}/.config/gh:/home/${DEV_USERNAME:-devuser}/.config/gh
+      - ${HOME}/.config/opencode:/home/${DEV_USERNAME:-devuser}/.config/opencode
+      - opencode-data-vol:/home/${DEV_USERNAME:-devuser}/.local/share/opencode
+      - opencode-state-vol:/home/${DEV_USERNAME:-devuser}/.local/state/opencode
+      - cache-vol:/ccache
+      - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - ${DOCKER_GID:-996}
+    environment:
+      - CCACHE_DIR=/ccache
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    stdin_open: true
+    tty: true

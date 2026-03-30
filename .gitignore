@@ -1,1 +1,10 @@
 .devcontainer/.env
+.devcontainer/devcontainer.local.json
+.devcontainer/docker-compose.override.yml
+scylla.code-workspace
+*.local.code-workspace
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*~

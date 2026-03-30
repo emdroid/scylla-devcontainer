@@ -1,0 +1,12 @@
+{
+    "folders": [
+        {
+            "name": "Devcontainer Setup",
+            "path": "__SIDECAR_REPO_DIR__"
+        },
+        {
+            "name": "ScyllaDB",
+            "path": "scylladb"
+        }
+    ]
+}
