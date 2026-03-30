@@ -10,10 +10,11 @@ env_file="${repo_devcontainer_dir}/.env"
 workspace_template="${repo_root}/scylla.code-workspace.example"
 workspace_file="${sidecar_root}/scylla.code-workspace"
 repo_dir_name="$(basename "${repo_root}")"
+relative_repo_devcontainer_dir="${repo_dir_name}/.devcontainer"
 
 if [[ -L "${root_devcontainer_dir}" ]]; then
-    current_target="$(readlink -f "${root_devcontainer_dir}")"
-    expected_target="$(readlink -f "${repo_devcontainer_dir}")"
+    current_target="$(readlink -m "${root_devcontainer_dir}")"
+    expected_target="$(readlink -m "${repo_devcontainer_dir}")"
     if [[ "${current_target}" != "${expected_target}" ]]; then
         echo "Error: ${root_devcontainer_dir} points to ${current_target}, expected ${expected_target}." >&2
         echo "Fix it and re-run this script." >&2
@@ -24,12 +25,12 @@ elif [[ -e "${root_devcontainer_dir}" ]]; then
     echo "Error: ${root_devcontainer_dir} exists and is not a symlink." >&2
     echo "To migrate safely:" >&2
     echo "  mv \"${root_devcontainer_dir}\" \"${root_devcontainer_dir}.backup\"" >&2
-    echo "  ln -s \"${repo_devcontainer_dir}\" \"${root_devcontainer_dir}\"" >&2
+    echo "  ln -s \"${relative_repo_devcontainer_dir}\" \"${root_devcontainer_dir}\"" >&2
     echo "Then re-run this script." >&2
     exit 1
 else
-    ln -s "${repo_devcontainer_dir}" "${root_devcontainer_dir}"
-    echo "Created ${root_devcontainer_dir} -> ${repo_devcontainer_dir}"
+    ln -s "${relative_repo_devcontainer_dir}" "${root_devcontainer_dir}"
+    echo "Created ${root_devcontainer_dir} -> ${relative_repo_devcontainer_dir}"
 fi
 
 dev_username="${USER:-devuser}"
