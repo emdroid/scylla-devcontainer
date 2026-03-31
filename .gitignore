@@ -1,4 +1,4 @@
-.devcontainer/.env
+.devcontainer/.env*
 .devcontainer/devcontainer.local.json
 .devcontainer/docker-compose.override.yml
 scylla.code-workspace
